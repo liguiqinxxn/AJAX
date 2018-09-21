@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        window.onload = function() {
+
+            var oBtn = document.getElementById('btn');
+            oBtn.onclick = function() {
+                var xhr = null;
+                /*if (window.XMLHttpRequest) {
+                    xhr = new XMLHttpRequest();
+                } else {
+                    xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }*/
+                try {
+                    xhr = new XMLHttpRequest();
+                } catch (e) {
+                    xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+
+                xhr.open('get','5-get.php?username='+encodeURI('刘伟')+'&age=30&' + new Date().getTime(),true);
+                xhr.send();
+                xhr.onreadystatechange = function() {
+
+                    if ( xhr.readyState == 4 ) {
+                        if ( xhr.status == 200 ) {
+                            alert( xhr.responseText );
+                        } else {
+                            alert('出错了,Err：' + xhr.status);
+                        }
+                    }
+
+                }
+
+            }
+        }
+    </script>
+</head>
+<body>
+    <input type="button" value="按钮" id="btn" />
+</body>
+</html>
