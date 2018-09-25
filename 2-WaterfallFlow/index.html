@@ -23,7 +23,7 @@
             getList();
 
             function getList() {
-                ajax('get','getPics.php','cpage'+ iPage,function (data) {
+                ajax('get','getPics.php','cpage='+ iPage,function (data) {
                     var data = JSON.parse(data);
 
                     if (!data.length){
