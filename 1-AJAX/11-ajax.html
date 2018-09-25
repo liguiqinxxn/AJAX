@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>无标题文档</title>
+    <script src="JSON.js"></script>
+    <script>
+        window.onload = function() {
+            var oBtn = document.getElementById('btn');
+            oBtn.onclick = function() {
+                var xhr = null;
+                try {
+                    xhr = new XMLHttpRequest();
+                } catch (e) {
+                    xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xhr.open('get','11-getList.php',true);
+                xhr.send();
+                xhr.onreadystatechange = function() {
+
+                    if ( xhr.readyState == 4 ) {
+                        if ( xhr.status == 200 ) {
+                            //alert( xhr.responseText );
+                        } else {
+                            alert('出错了,Err：' + xhr.status);
+                        }
+                    }
+
+                }
+
+            }
+        }
+    </script>
+</head>
+
+<body>
+<input type="button" value="按钮" id="btn" />
+</body>
+</html>
