@@ -7,9 +7,9 @@ window.onload = function(){
 	var oList = document.getElementById('list');
 	var iPage = 1;
 
-	var oShowMore = document.getElementById('oShowMore');
+	var oShowMore = document.getElementById('showMore');
 
-	var oUsername1 = document.getElementById('oUsername1');
+	var oUsername1 = document.getElementById('username1');
 	var oVerifyUserNameMsg = document.getElementById('verifyUserNameMsg');
 
 
@@ -51,7 +51,217 @@ window.onload = function(){
 	*/
 	oUsername1.onblur = function(){
 		ajax('get', 'guestbook/index.php', 'm=index&a=verifyUserName&username=' + this.value, function(data) {
-			alert(data);
+			// alert(data);
+			var d = JSON.parse(data);
+
+			oVerifyUserNameMsg.innerHTML = d.message;
+
+			if (d.code) {
+				oVerifyUserNameMsg.style.color = "red";
+			}else{
+				oVerifyUserNameMsg.style.color = "green"; 
+			}
+		});
+	}
+
+	/*
+	用户注册
+	get/post
+		guestbook/index.php
+			m : index
+			a : reg
+			username : 要注册的用户名
+			password : 注册的密码
+		返回
+			{
+				code : 返回的信息代码 0 = 没有错误，1 = 有错误
+				message : 返回的信息 具体返回信息
+			}
+	*/
+	var oPassword1 = document.getElementById('password1');
+	var oRegBtn = document.getElementById('btnReg');
+	oRegBtn.onclick = function(){
+		ajax('post','guestbook/index.php', 'm=index&a=reg&username='+encodeURI(oUsername1.value)+'&password=' + oPassword1.value, function(data){
+			var d = JSON.parse(data);
+			alert(d.message);
+
+			oUsername1.value = "";
+			oPassword1.value = "";
+			oVerifyUserNameMsg.innerHTML = "";
+		});
+	}
+
+	/*
+	用户登陆
+	get/post
+		guestbook/index.php
+			m : index
+			a : login
+			username : 要登陆的用户名
+			password : 登陆的密码
+		返回
+			{
+				code : 返回的信息代码 0 = 没有错误，1 = 有错误
+				message : 返回的信息 具体返回信息
+			}
+	*/
+	var oUsername2 = document.getElementById('username2');
+	var oPassword2 = document.getElementById('password2');
+	var oLoginBtn = document.getElementById('btnLogin');
+	oLoginBtn.onclick = function(){
+
+		ajax('post', 'guestbook/index.php', 'm=index&a=login&username='+encodeURI(oUsername2.value)+'&password=' +oPassword2.value, function(data) {
+			var d = JSON.parse(data);
+			alert(d.message);
+			oUsername2.value = "";
+			oPassword2.value = "";
+
+			if (!d.code) {
+				updateUserstatus();
+			}
+		});
+	}
+
+	/*
+	用户退出
+	get/post
+		guestbook/index.php
+			m : index
+			a : logout
+		返回
+			{
+				code : 返回的信息代码 0 = 没有错误，1 = 有错误
+				message : 返回的信息 具体返回信息
+			}
+	*/
+	var oLogout = document.getElementById('logout');
+	oLogout.onclick = function(){
+
+		ajax('get', 'guestbook/index.php', 'm=index&a=logout',function(data) {
+			var d = JSON.parse(data);
+			alert(d.message);
+
+			if (!d.code) {
+				// 退出成功
+				updateUserstatus();
+			}
+		});
+
+		return false;
+	}
+
+	/*
+	留言
+	post
+		guestbook/index.php
+			m : index
+			a : send
+			content : 留言内容
+		返回
+			{
+				code : 返回的信息代码 0 = 没有错误，1 = 有错误
+				data : 返回成功的留言的详细信息
+					{
+						cid : 留言id	
+						content : 留言内容 
+						uid : 留言人的id
+						username : 留言人的名称
+						dateline : 留言的时间戳(秒)
+						support : 当前这条留言的顶的数量
+						oppose : 当前这条留言的踩的数量
+					}
+				message : 返回的信息 具体返回信息
+			}
+	*/
+	var oContent = document.getElementById('content');
+	var oPostBtn = document.getElementById('btnPost');
+	oPostBtn.onclick = function(){
+
+		ajax('post', 'guestbook/index.php', 'm=index&a=send&content=' + encodeURI(oContent.value), function(data){
+
+			var d = JSON.parse(data);
+			alert(d.message);
+			oContent.value = "";
+
+			if (!d.code) {
+				if (!oList.children[0]) {
+					oList.innerHTML = "";
+				}
+				// 添加当前留言到列表中
+				createList(d.data, true);
+			}
+
+		});
+	}
+
+	function createList(data, insert) {
+		var oDl = document.createElement('dl');
+
+		html = `
+			<dt>
+				<strong>${data.username}</strong> 说 :
+			</dt>
+			<dd>${data.content}</dd>
+			<dd class="t">
+				<a href="javascript:;" id="support">顶(<span>${data.support}</span>)</a>
+				 | 
+				<a href="javascript:;" id="oppose">踩(<span>${data.oppose}</span>)</a>
+			</dd>
+		`;
+
+		oDl.innerHTML = html;
+		if (insert && oList.children[0]) {
+			oList.insertBefore(oDl, oList.children[0]);
+		}else {
+			oList.appendChild(oDl);
+		}
+	}
+
+	// 点击显示更多的内容
+	oShowMore.onclick = function() {
+		iPage++;
+		showList();
+	}
+
+	function showList(){
+		/*
+		初始化留言列表
+		get
+			guestbook/index.php
+				m : index
+				a : getList
+				page : 获取的留言的页码，默认为1
+				n : 每页显示的条数，默认为10
+			返回
+				{
+					code : 返回的信息代码 0 = 没有错误，1 = 有错误
+					data : 返回成功的留言的详细信息
+						{
+							cid : 留言id	
+							content : 留言内容 
+							uid : 留言人的id
+							username : 留言人的名称
+							dateline : 留言的时间戳(秒)
+							support : 当前这条留言的顶的数量
+							oppose : 当前这条留言的踩的数量
+						}
+					message : 返回的信息 具体返回信息
+				}
+		*/
+		ajax('get', 'guestbook/index.php', 'm=index&a=getList&n=5&page=' + iPage, function(data) {
+			var d = JSON.parse(data);
+			var data = d.data;
+
+			if (data) {
+				for (var i = 0; i < data.list.length; i++) {
+					createList(data.list[i]);
+				}
+			} else {
+				if (iPage == 1) {
+					oList.innerHTML = '现在还没有留言，快来抢沙发...';
+				}
+				oShowMore.style.display = 'none';
+			}
 		});
 	}
 
