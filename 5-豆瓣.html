@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<style>
+body {position: relative;}
+img {vertical-align: top;}
+.clearfix {*zoom:1;}
+.clearfix:after {content: "";display: block;clear: both;}
+#q {width: 300px;height: 30px; padding: 5px; border: 1px solid #f90; font-size: 16px;border-radius: 6px;}
+#btn {width: 50px;height: 30px;margin: 0 5px;background-color: #f90;border-radius: 6px;border: 1px solid #000;color: #fff;}
+ul {list-style: none;display: block;}
+li {/* display: inline-block;  */float: left; margin: 10px;width: 180px; height: 280px;border:1px solid #000;}
+ul li img {width: 160px;margin: 0 10px;}
+#pageNum {display: none; width: 400px; text-align: center; /*border: 1px solid #000;*/margin: 0 auto;}
+#page {display: inline-block;}
+.active {color: red;}
+</style>
+
+
+<body>
+	<input type="text" id="q" /><input type="button" id="btn" value="搜素" />
+	<p id="msg"></p>
+	<div id="pageNum" class="clearfix">
+		<a href="" id="pre">上一页</a>
+		<div id="page"></div>
+		<a href="" id="next">下一页</a>
+	</div>
+	<ul id="list">
+	</ul>
+	
+</body>
+<script>
+	var iPage = 5;
+
+	function fn1(data) {
+
+		var oQ = document.getElementById('q');
+		var oMsg = document.getElementById('msg');
+		var oList = document.getElementById('list');
+
+		var perpageNum = 50;
+		var total = data['opensearch:totalResults'].$t;
+		var totalPage  = Math.floor(total/perpageNum);
+		
+		console.log(data);
+
+		oMsg.innerHTML = data.title.$t + " : " + total + "条，一共"+totalPage+"页";
+
+		var aEntry = data.entry;
+		var html = '';
+		for (var i = 0; i < aEntry.length; i++) {
+			html += `
+			<li>
+				<img src="${ aEntry[i].link[2]['@href'] }">
+				<p>${aEntry[i].title.$t}</p>
+			</li>
+			`;
+		}
+		oList.innerHTML = html ;
+
+		paging(iPage, totalPage, perpageNum );
+	}
+
+	//分页功能
+	function paging(iPage, totalPage, perpageNum ){
+		var oPre = document.getElementById('pre');
+		var oNext = document.getElementById('next');
+		var page = document.getElementById('page');
+		var oQ = document.getElementById('q');
+
+		var begin = null;
+		var end = null;
+
+		if (iPage < 1) {
+			iPage = 1
+		}
+		if (iPage > totalPage) {
+			iPage = totalPage;
+		}
+
+		if (iPage == 1) {
+			oPre.style.display= "none";
+		}else {
+			oPre.style.display= "inline-block";
+		}
+
+		if (totalPage > 10) {
+			if (iPage -7 < 0) {
+				begin = 1;
+				end = 10;
+			}else if(totalPage - iPage <4){
+				end = totalPage;
+				begin = end - 9;
+			}else {
+				end = iPage + 4;
+				begin = end - 9;
+			}
+		}else {
+				begin = 1;
+				end = totalPage;
+		}
+
+		var pagehtml = '';
+		for (var i = begin; i <= end; i++) {
+			if (i == iPage) {
+				pagehtml += `
+			<a href='' class="active">${i}</a>
+			`;
+			}else{
+				pagehtml += `
+			<a href=''>${i}</a>
+			`;
+			}
+		}
+		page.innerHTML = pagehtml;
+		
+		/*oPre.onclick = function(){
+			iPage--;
+			if ( oQ.value != '') {
+				var oScript = document.createElement('script');
+				oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+((iPage-1)*50)+'&max-results=50';
+				document.body.appendChild(oScript);
+				pageNum.style.display = "block";
+			}else{
+				pageNum.style.display = "none";
+			}
+		}
+		oNext.onxlick = function(){
+			iPage ++;
+			if ( oQ.value != '') {
+				var oScript = document.createElement('script');
+				oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+((iPage-1)*50)+'&max-results=50';
+				document.body.appendChild(oScript);
+				pageNum.style.display = "block";
+			}else{
+				pageNum.style.display = "none";
+			}
+		}*/
+	}
+	window.onload = function(){
+
+		var oQ = document.getElementById('q');
+		var oBtn = document.getElementById('btn');
+		var oMsg = document.getElementById('msg');
+		var oList = document.getElementById('list');
+		var pageNum = document.getElementById('pageNum');
+
+		oBtn.onclick = function(){
+			if ( oQ.value != '') {
+				var oScript = document.createElement('script');
+				oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+((iPage-1)*50)+'&max-results=50';
+				document.body.appendChild(oScript);
+				pageNum.style.display = "block";
+			}else{
+				pageNum.style.display = "none";
+			}
+		}
+	}
+</script>
+</html>
