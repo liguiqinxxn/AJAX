@@ -14,37 +14,72 @@ img {vertical-align: top;}
 ul {list-style: none;display: block;}
 li {/* display: inline-block;  */float: left; margin: 10px;width: 180px; height: 280px;border:1px solid #000;}
 ul li img {width: 160px;margin: 0 10px;}
-#pageNum {display: none; width: 400px; text-align: center; /*border: 1px solid #000;*/margin: 0 auto;}
+#pageNum {display: none; width: 500px; text-align: center; /*border: 1px solid #000;*/margin: 0 auto;}
+#pageNum input {border: none;}
 #page {display: inline-block;}
 .active {color: red;}
+#iPage {display: none;}
 </style>
-
-
 <body>
 	<input type="text" id="q" /><input type="button" id="btn" value="搜素" />
 	<p id="msg"></p>
 	<div id="pageNum" class="clearfix">
-		<a href="" id="pre">上一页</a>
-		<div id="page"></div>
-		<a href="" id="next">下一页</a>
+		<input type="button" id="pre" value="上一页" />
+		<div id="page">
+			<!-- <input type="button" id="pre" value="1" /> -->	
+		</div>
+		<input type="button" id="next" value="下一页" />
 	</div>
 	<ul id="list">
 	</ul>
+	<input type="text" id="iPage" value ="1">
 	
 </body>
 <script>
-	var iPage = 5;
-
-	function fn1(data) {
-
-		var oQ = document.getElementById('q');
+	var oQ = document.getElementById('q');
+	window.onload = function(){	
+		var oBtn = document.getElementById('btn');
 		var oMsg = document.getElementById('msg');
 		var oList = document.getElementById('list');
+		var pageNum = document.getElementById('pageNum');
+		var oPre = document.getElementById('pre');
+		var oNext = document.getElementById('next');
+		var page = document.getElementById('page');
+		var iPage = document.getElementById('iPage');
+
+		oBtn.onclick = function(){
+			LoadData(parseInt(iPage.value));
+		}
+		oPre.onclick = function(){
+			iPage.value = parseInt(iPage.value) - 1;
+			LoadData(parseInt(iPage.value));
+		}
+		oNext.onclick = function(){
+			iPage.value = parseInt(iPage.value) + 1;
+			LoadData(parseInt(iPage.value));	
+		}
+	}
+
+	function LoadData(iPage){
+		if ( oQ.value != '') {
+			var oScript = document.createElement('script');
+			oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+((iPage-1)*50)+'&max-results=50';
+			document.body.appendChild(oScript);
+			pageNum.style.display = "block";
+		}else{
+			pageNum.style.display = "none";
+		}
+	}
+
+	function fn1(data) {
+		var oMsg = document.getElementById('msg');
+		var oList = document.getElementById('list');
+		var iPage = document.getElementById('iPage');
 
 		var perpageNum = 50;
 		var total = data['opensearch:totalResults'].$t;
 		var totalPage  = Math.floor(total/perpageNum);
-		
+
 		console.log(data);
 
 		oMsg.innerHTML = data.title.$t + " : " + total + "条，一共"+totalPage+"页";
@@ -61,7 +96,7 @@ ul li img {width: 160px;margin: 0 10px;}
 		}
 		oList.innerHTML = html ;
 
-		paging(iPage, totalPage, perpageNum );
+		paging(iPage, totalPage, perpageNum ); //当前页，总条数，每页的条数
 	}
 
 	//分页功能
@@ -69,33 +104,34 @@ ul li img {width: 160px;margin: 0 10px;}
 		var oPre = document.getElementById('pre');
 		var oNext = document.getElementById('next');
 		var page = document.getElementById('page');
-		var oQ = document.getElementById('q');
+		var iPage = document.getElementById('iPage');
+		var iPageVal = parseInt(iPage.value);
 
 		var begin = null;
 		var end = null;
 
-		if (iPage < 1) {
-			iPage = 1
+		if (iPageVal < 1) {
+			iPageVal = 1
 		}
-		if (iPage > totalPage) {
-			iPage = totalPage;
+		if (iPageVal > totalPage) {
+			iPageVal = totalPage;
 		}
 
-		if (iPage == 1) {
+		if (iPageVal == 1) {
 			oPre.style.display= "none";
 		}else {
 			oPre.style.display= "inline-block";
 		}
 
 		if (totalPage > 10) {
-			if (iPage -7 < 0) {
+			if (iPageVal -7 < 0) {
 				begin = 1;
 				end = 10;
-			}else if(totalPage - iPage <4){
+			}else if(totalPage - iPageVal <4){
 				end = totalPage;
 				begin = end - 9;
 			}else {
-				end = iPage + 4;
+				end = iPageVal + 4;
 				begin = end - 9;
 			}
 		}else {
@@ -105,59 +141,26 @@ ul li img {width: 160px;margin: 0 10px;}
 
 		var pagehtml = '';
 		for (var i = begin; i <= end; i++) {
-			if (i == iPage) {
+			if (i == iPageVal) {
 				pagehtml += `
-			<a href='' class="active">${i}</a>
+				<input type="button" class="active" value="${i}" />
 			`;
 			}else{
 				pagehtml += `
-			<a href=''>${i}</a>
+				<input type="button" value="${i}" />
 			`;
 			}
 		}
 		page.innerHTML = pagehtml;
-		
-		/*oPre.onclick = function(){
-			iPage--;
-			if ( oQ.value != '') {
-				var oScript = document.createElement('script');
-				oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+((iPage-1)*50)+'&max-results=50';
-				document.body.appendChild(oScript);
-				pageNum.style.display = "block";
-			}else{
-				pageNum.style.display = "none";
-			}
-		}
-		oNext.onxlick = function(){
-			iPage ++;
-			if ( oQ.value != '') {
-				var oScript = document.createElement('script');
-				oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+((iPage-1)*50)+'&max-results=50';
-				document.body.appendChild(oScript);
-				pageNum.style.display = "block";
-			}else{
-				pageNum.style.display = "none";
-			}
-		}*/
-	}
-	window.onload = function(){
 
-		var oQ = document.getElementById('q');
-		var oBtn = document.getElementById('btn');
-		var oMsg = document.getElementById('msg');
-		var oList = document.getElementById('list');
-		var pageNum = document.getElementById('pageNum');
-
-		oBtn.onclick = function(){
-			if ( oQ.value != '') {
-				var oScript = document.createElement('script');
-				oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+((iPage-1)*50)+'&max-results=50';
-				document.body.appendChild(oScript);
-				pageNum.style.display = "block";
-			}else{
-				pageNum.style.display = "none";
+		var aInp = page.getElementsByTagName('input');
+		for (var i = 0; i < aInp.length; i++) {
+			aInp[i].onclick = function(){
+				iPage.value = this.value;
+				LoadData(parseInt(iPage.value));
 			}
 		}
 	}
+
 </script>
 </html>
