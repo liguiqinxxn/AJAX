@@ -72,6 +72,7 @@ ul li img {width: 160px;margin: 0 10px;}
 	}
 
 	function fn1(data) {
+		if (!data)return;
 		var oMsg = document.getElementById('msg');
 		var oList = document.getElementById('list');
 		var iPage = document.getElementById('iPage');
@@ -80,7 +81,7 @@ ul li img {width: 160px;margin: 0 10px;}
 		var total = data['opensearch:totalResults'].$t;
 		var totalPage  = Math.floor(total/perpageNum);
 
-		console.log(data);
+		// console.log(data);
 
 		oMsg.innerHTML = data.title.$t + " : " + total + "条，一共"+totalPage+"页";
 
