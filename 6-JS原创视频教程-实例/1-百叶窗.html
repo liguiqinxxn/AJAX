@@ -38,7 +38,7 @@ li div {
 		var oUl2 = document.getElementById('ul2');
 
 		toShow(oUl);
-		
+
 		setTimeout(function(){
 			toShow(oUl2);
 		},2000);
@@ -56,6 +56,7 @@ li div {
 			},4000);
 
 			function toChange(){
+				clearInterval(timer);
 				timer = setInterval(function(){
 					if (iNow == aDiv.length) {
 						clearInterval(timer);
