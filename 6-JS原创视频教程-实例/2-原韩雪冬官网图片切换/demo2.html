@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Document</title>
+<style>
+	.box1 {width: 100px;height: 100px;background-color: red;position: absolute;left: 100px;top: 100px;}
+	.box2 {width: 100px;height: 100px;background-color: yellow;position: absolute;left: 250px;top: 50px;}
+	.box3 {width: 100px;height: 100px;background-color: blue;position: absolute;left: 400px;top: 100px;}
+</style>
+<script>
+	window.onload = function(){
+		var aInput = document.getElementsByTagName('input');
+		var aDiv = document.getElementsByTagName('div');
+		var arr = [];
+
+		for (var i = 0; i < aDiv.push.length; i++) {
+			arr.push( [getStyle(aDiv[i],'left') , getStyle(aDiv[i],'top')])
+		}
+		function getStyle(obj,sttr){
+			if (obj.currentStyle) {
+				return obj.currentStyle[attr];
+			}else{
+				return getComputedStyle(obj,false)[attr];
+			}
+		}
+
+	}
+</script>
+</head>
+<body>
+	<input type="button" value="←">
+	<input type="button" value="→">
+	<div class="box1"></div>
+	<div class="box2"></div>
+	<div class="box3"></div>
+</body>
+</html>
